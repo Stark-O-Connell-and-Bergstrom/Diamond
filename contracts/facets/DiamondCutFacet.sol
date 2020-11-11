@@ -9,6 +9,7 @@ pragma experimental ABIEncoderV2;
 
 
 import "../interfaces/IDiamondCut.sol";
+import "../libraries/LibOwnership.sol";
 import "../libraries/LibDiamond.sol";
 
 contract DiamondCutFacet is IDiamondCut {
@@ -23,7 +24,7 @@ contract DiamondCutFacet is IDiamondCut {
         address _init,
         bytes calldata _calldata
     ) external override {
-        LibDiamond.enforceIsContractOwner();
+        LibOwnership.enforceIsContractOwner();
         for (uint256 facetIndex; facetIndex < _diamondCut.length; facetIndex++) {
             LibDiamond.addReplaceRemoveFacetSelectors(
                 _diamondCut[facetIndex].facetAddress,

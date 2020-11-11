@@ -9,6 +9,7 @@ pragma experimental ABIEncoderV2;
 * Implementation of a diamond.
 /******************************************************************************/
 
+import "./libraries/LibOwnership.sol";
 import "./libraries/LibDiamond.sol";
 import "./interfaces/IDiamondLoupe.sol";
 import "./interfaces/IDiamondCut.sol";
@@ -16,9 +17,9 @@ import "./interfaces/IERC173.sol";
 import "./interfaces/IERC165.sol";
 
 contract Diamond {
-    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _owner) payable {
+    constructor(IDiamondCut.FacetCut[] memory _diamondCut) payable {
         LibDiamond.diamondCut(_diamondCut, address(0), new bytes(0));
-        LibDiamond.setContractOwner(_owner);
+        LibOwnership.setContractOwner(msg.sender);
 
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
 
@@ -27,6 +28,14 @@ contract Diamond {
         ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
+    }
+
+    function _bailoutDiamondCut(
+        IDiamondCut.FacetCut[] memory _diamondCut,
+        address _init,
+        bytes memory _calldata
+    ) external {
+        LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
 
     // Find facet for function that is called and execute the
